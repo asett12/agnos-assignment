@@ -83,7 +83,6 @@ function getComputedStatus(
   const last = new Date(lastUpdatedAt).getTime();
   const diffMs = now.getTime() - last;
 
-  // 30s of no update while "active" => inactive
   if (status === "active" && diffMs > 30_000) {
     return "inactive";
   }
@@ -142,7 +141,7 @@ function PatientCard({
           <div>
             <h3 className="text-sm font-semibold">{displayName}</h3>
             <p className="text-[11px] text-slate-400">
-              ID: <span className="font-mono">{patientId.slice(0, 10)}…</span>
+              ID: <span className="font-mono">{patientId.slice(0, 6)}</span>
             </p>
           </div>
 
