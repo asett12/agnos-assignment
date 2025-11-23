@@ -37,6 +37,9 @@ export default function PatientPage() {
   const [status, setStatus] = useState<PatientStatus>("idle");
   const [submittedAt, setSubmittedAt] = useState<string | null>(null);
 
+  // NEW: controls the success popup
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const validate = (data: PatientFormData): Errors => {
     const newErrors: Errors = {};
 
@@ -117,194 +120,228 @@ export default function PatientPage() {
       status: "submitted",
       lastUpdatedAt: now,
     });
+
+    setShowSuccessModal(true);
   };
 
   const handleReset = () => {
-    setForm(initialForm);
+    const clearedForm = { ...initialForm };
+    setForm(clearedForm);
     setErrors({});
     setStatus("idle");
     setSubmittedAt(null);
 
     sendPatientUpdate({
       patientId,
-      form,
-      initialForm,
+      form: clearedForm,
       status: "idle",
       lastUpdatedAt: new Date().toISOString(),
     });
   };
 
+
+  const handleSuccessOk = () => {
+    setShowSuccessModal(false);
+    handleReset();
+  };
+
   return (
-    <section className="space-y-4">
-      <header className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">Patient Form</h2>
-          <p className="text-sm text-slate-300">
-            Please fill in your personal details. Fields marked * are required.
-          </p>
-        </div>
-
-        <div className="text-xs text-slate-400">
-          Status:{" "}
-          <span
-            className={
-              status === "submitted"
-                ? "text-emerald-400"
-                : status === "active"
-                ? "text-sky-400"
-                : "text-slate-300"
-            }
-          >
-            {status === "idle"
-              ? "Not started"
-              : status === "active"
-              ? "Filling in progress"
-              : "Submitted"}
-          </span>
-          {submittedAt && (
-            <div className="mt-0.5">
-              Submitted at{" "}
-              <span className="text-slate-200">
-                {new Date(submittedAt).toLocaleString()}
-              </span>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-4 rounded-lg border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-2"
-      >
-        {/* Left column */}
-        <div className="space-y-4">
-          <Field
-            label="First Name *"
-            value={form.firstName}
-            onChange={handleChange("firstName")}
-            error={errors.firstName}
-          />
-          <Field
-            label="Middle Name"
-            value={form.middleName || ""}
-            onChange={handleChange("middleName")}
-            error={errors.middleName}
-          />
-          <Field
-            label="Last Name *"
-            value={form.lastName}
-            onChange={handleChange("lastName")}
-            error={errors.lastName}
-          />
-          <Field
-            label="Date of Birth *"
-            type="date"
-            value={form.dateOfBirth}
-            onChange={handleChange("dateOfBirth")}
-            error={errors.dateOfBirth}
-          />
+    <>
+      <section className="space-y-4">
+        <header className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
           <div>
-            <label className="text-xs font-medium text-slate-200" htmlFor="gender">
-              Gender *
-            </label>
-
-            <select
-              id="gender"
-              value={form.gender}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, gender: e.target.value }))
-              }
-              className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/80 
-                        px-3 py-2 text-sm text-slate-50 focus:border-sky-500 
-                        focus:outline-none focus:ring-1 focus:ring-sky-500"
-            >
-              <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="LGBTQ+">LGBTQ+</option>
-            </select>
-
-            {errors.gender && (
-              <p className="mt-1 text-xs text-rose-400">{errors.gender}</p>
-            )}
+            <h2 className="text-xl font-semibold">Patient Form</h2>
+            <p className="text-sm text-slate-300">
+              Please fill in your personal details. Fields marked * are required.
+            </p>
           </div>
 
-          <Field
-            label="Phone Number *"
-            value={form.phoneNumber}
-            onChange={handleChange("phoneNumber")}
-            placeholder="+66 ..."
-            error={errors.phoneNumber}
-          />
-          <Field
-            label="Email *"
-            type="email"
-            value={form.email}
-            onChange={handleChange("email")}
-            placeholder="name@example.com"
-            error={errors.email}
-          />
-        </div>
+          <div className="text-xs text-slate-400">
+            Status:{" "}
+            <span
+              className={
+                status === "submitted"
+                  ? "text-emerald-400"
+                  : status === "active"
+                  ? "text-sky-400"
+                  : "text-slate-300"
+              }
+            >
+              {status === "idle"
+                ? "Not started"
+                : status === "active"
+                ? "Filling in progress"
+                : "Submitted"}
+            </span>
+            {submittedAt && (
+              <div className="mt-0.5">
+                Submitted at{" "}
+                <span className="text-slate-200">
+                  {new Date(submittedAt).toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+        </header>
 
-        {/* Right column */}
-        <div className="space-y-4">
-          <Field
-            label="Address *"
-            as="textarea"
-            value={form.address}
-            onChange={handleChange("address")}
-            error={errors.address}
-          />
-          <Field
-            label="Preferred Language *"
-            value={form.preferredLanguage}
-            onChange={handleChange("preferredLanguage")}
-            placeholder="e.g. English, Thai"
-            error={errors.preferredLanguage}
-          />
-          <Field
-            label="Nationality *"
-            value={form.nationality}
-            onChange={handleChange("nationality")}
-            error={errors.nationality}
-          />
-          <Field
-            label="Emergency Contact Name"
-            value={form.emergencyContactName || ""}
-            onChange={handleChange("emergencyContactName")}
-            error={errors.emergencyContactName}
-          />
-          <Field
-            label="Emergency Contact Relationship"
-            value={form.emergencyContactRelationship || ""}
-            onChange={handleChange("emergencyContactRelationship")}
-            error={errors.emergencyContactRelationship}
-          />
-          <Field
-            label="Religion"
-            value={form.religion || ""}
-            onChange={handleChange("religion")}
-            error={errors.religion}
-          />
-        </div>
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-4 rounded-lg border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-2"
+        >
+          {/* Left column */}
+          <div className="space-y-4">
+            <Field
+              label="First Name *"
+              value={form.firstName}
+              onChange={handleChange("firstName")}
+              error={errors.firstName}
+            />
+            <Field
+              label="Middle Name"
+              value={form.middleName || ""}
+              onChange={handleChange("middleName")}
+              error={errors.middleName}
+            />
+            <Field
+              label="Last Name *"
+              value={form.lastName}
+              onChange={handleChange("lastName")}
+              error={errors.lastName}
+            />
+            <Field
+              label="Date of Birth *"
+              type="date"
+              value={form.dateOfBirth}
+              onChange={handleChange("dateOfBirth")}
+              error={errors.dateOfBirth}
+            />
+            <div>
+              <label
+                className="text-xs font-medium text-slate-200"
+                htmlFor="gender"
+              >
+                Gender *
+              </label>
 
-        <div className="col-span-full mt-2 flex flex-wrap gap-3">
-          <button
-            type="submit"
-            className="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-medium hover:bg-sky-500"
-          >
-            Submit
-          </button>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="inline-flex items-center rounded-md border border-slate-700 px-4 py-2 text-sm hover:border-slate-500"
-          >
-            Reset
-          </button>
+              <select
+                id="gender"
+                value={form.gender}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, gender: e.target.value }))
+                }
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/80 
+                        px-3 py-2 text-sm text-slate-50 focus:border-sky-500 
+                        focus:outline-none focus:ring-1 focus:ring-sky-500"
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="LGBTQ+">LGBTQ+</option>
+              </select>
+
+              {errors.gender && (
+                <p className="mt-1 text-xs text-rose-400">{errors.gender}</p>
+              )}
+            </div>
+
+            <Field
+              label="Phone Number *"
+              value={form.phoneNumber}
+              onChange={handleChange("phoneNumber")}
+              placeholder="+66 ..."
+              error={errors.phoneNumber}
+            />
+            <Field
+              label="Email *"
+              type="email"
+              value={form.email}
+              onChange={handleChange("email")}
+              placeholder="name@example.com"
+              error={errors.email}
+            />
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-4">
+            <Field
+              label="Address *"
+              as="textarea"
+              value={form.address}
+              onChange={handleChange("address")}
+              error={errors.address}
+            />
+            <Field
+              label="Preferred Language *"
+              value={form.preferredLanguage}
+              onChange={handleChange("preferredLanguage")}
+              placeholder="e.g. English, Thai"
+              error={errors.preferredLanguage}
+            />
+            <Field
+              label="Nationality *"
+              value={form.nationality}
+              onChange={handleChange("nationality")}
+              error={errors.nationality}
+            />
+            <Field
+              label="Emergency Contact Name"
+              value={form.emergencyContactName || ""}
+              onChange={handleChange("emergencyContactName")}
+              error={errors.emergencyContactName}
+            />
+            <Field
+              label="Emergency Contact Relationship"
+              value={form.emergencyContactRelationship || ""}
+              onChange={handleChange("emergencyContactRelationship")}
+              error={errors.emergencyContactRelationship}
+            />
+            <Field
+              label="Religion"
+              value={form.religion || ""}
+              onChange={handleChange("religion")}
+              error={errors.religion}
+            />
+          </div>
+
+          <div className="col-span-full mt-2 flex flex-wrap gap-3">
+            <button
+              type="submit"
+              className="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-medium hover:bg-sky-500"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center rounded-md border border-slate-700 px-4 py-2 text-sm hover:border-slate-500"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* Success popup */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-50">
+              Submitted successfully
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">
+              Thank you. Your information has been submitted successfully.
+            </p>
+            <button
+              type="button"
+              onClick={handleSuccessOk}
+              className="mt-4 inline-flex w-full justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
+            >
+              OK
+            </button>
+          </div>
         </div>
-      </form>
-    </section>
+      )}
+    </>
   );
 }
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
+
 
 export const metadata: Metadata = {
   title: "Real-time Patient Intake | Agnos Assignment",
@@ -53,6 +55,7 @@ export default function RootLayout({
 
           <main className="mx-auto max-w-5xl px-6 py-6">{children}</main>
         </div>
+        <Analytics />
       </body>
     </html>
   );
