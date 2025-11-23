@@ -17,7 +17,9 @@ export interface PatientFormData {
 }
 
 export interface PatientRealtimePayload {
-  patientId: string;        
+  patientId: string;
+  form: PatientFormData;
+  initialForm?: PatientFormData;    
   status: PatientStatus;
   lastUpdatedAt: string;    
 }

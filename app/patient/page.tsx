@@ -80,7 +80,7 @@ export default function PatientPage() {
         setStatus("active");
         sendPatientUpdate({
           patientId,
-          data: form,
+          form,
           status: "active",
           lastUpdatedAt: now,
         });
@@ -113,7 +113,7 @@ export default function PatientPage() {
 
     sendPatientUpdate({
       patientId,
-      data: form,
+      form,
       status: "submitted",
       lastUpdatedAt: now,
     });
@@ -127,7 +127,8 @@ export default function PatientPage() {
 
     sendPatientUpdate({
       patientId,
-      data: initialForm,
+      form,
+      initialForm,
       status: "idle",
       lastUpdatedAt: new Date().toISOString(),
     });

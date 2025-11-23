@@ -35,7 +35,6 @@ export default function StaffPage() {
     };
   }, []);
 
-
   const patientEntries = Object.entries(patients);
   const hasAnyPatients = patientEntries.length > 0;
 
@@ -101,7 +100,8 @@ function PatientCard({
   index: number;
   now: Date;
 }) {
-  const { data, lastUpdatedAt } = payload;
+  // ⬅️ use form, not data
+  const { form, lastUpdatedAt } = payload;
 
   const computedStatus = useMemo(
     () => getComputedStatus(payload, now),
@@ -109,11 +109,11 @@ function PatientCard({
   );
 
   const hasBasicData =
-    data.firstName || data.lastName || data.phoneNumber || data.email;
+    form.firstName || form.lastName || form.phoneNumber || form.email;
 
   const displayName =
-    (data.firstName || data.lastName
-      ? `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim()
+    (form.firstName || form.lastName
+      ? `${form.firstName ?? ""} ${form.lastName ?? ""}`.trim()
       : null) || `Patient ${index + 1}`;
 
   const statusLabel: string =
@@ -167,32 +167,32 @@ function PatientCard({
       </header>
 
       <div className="grid gap-2 text-xs md:grid-cols-2">
-        <InfoField label="First Name" value={data.firstName} />
-        <InfoField label="Middle Name" value={data.middleName} />
-        <InfoField label="Last Name" value={data.lastName} />
-        <InfoField label="Date of Birth" value={data.dateOfBirth} />
-        <InfoField label="Gender" value={data.gender} />
-        <InfoField label="Phone Number" value={data.phoneNumber} />
-        <InfoField label="Email" value={data.email} />
+        <InfoField label="First Name" value={form.firstName} />
+        <InfoField label="Middle Name" value={form.middleName} />
+        <InfoField label="Last Name" value={form.lastName} />
+        <InfoField label="Date of Birth" value={form.dateOfBirth} />
+        <InfoField label="Gender" value={form.gender} />
+        <InfoField label="Phone Number" value={form.phoneNumber} />
+        <InfoField label="Email" value={form.email} />
         <InfoField
           label="Preferred Language"
-          value={data.preferredLanguage}
+          value={form.preferredLanguage}
         />
-        <InfoField label="Nationality" value={data.nationality} />
-        <InfoField label="Religion" value={data.religion} />
+        <InfoField label="Nationality" value={form.nationality} />
+        <InfoField label="Religion" value={form.religion} />
 
         <InfoField
           label="Address"
-          value={data.address}
+          value={form.address}
           className="md:col-span-2"
         />
         <InfoField
           label="Emergency Contact Name"
-          value={data.emergencyContactName}
+          value={form.emergencyContactName}
         />
         <InfoField
           label="Emergency Contact Relationship"
-          value={data.emergencyContactRelationship}
+          value={form.emergencyContactRelationship}
         />
       </div>
     </article>
