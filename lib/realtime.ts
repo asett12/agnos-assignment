@@ -1,36 +1,45 @@
 "use client";
 
+import { supabase } from "./supabaseClient";
 import { PatientRealtimePayload } from "./types";
 
-const CHANNEL_NAME = "patient-form-realtime";
+const CHANNEL_NAME = "patient_updates";
 
-export type RealtimeCallback = (payload: PatientRealtimePayload) => void;
+const sendChannel = supabase.channel(CHANNEL_NAME, {
+  config: { broadcast: { self: true } },
+});
 
-function createRealtimeChannel() {
-  if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
-    return null;
+sendChannel.subscribe();
+
+export async function sendPatientUpdate(payload: PatientRealtimePayload) {
+  try {
+    await sendChannel.send({
+      type: "broadcast",
+      event: "patient:update",
+      payload,
+    });
+  } catch (err) {
+      console.error("Unexpected error sending patient update:", err);
   }
-  return new BroadcastChannel(CHANNEL_NAME);
 }
 
-export function sendPatientUpdate(payload: PatientRealtimePayload) {
-  const channel = createRealtimeChannel();
-  if (!channel) return;
-  channel.postMessage(payload);
-}
 
-export function subscribeToPatientUpdates(callback: RealtimeCallback) {
-  const channel = createRealtimeChannel();
-  if (!channel) return () => {};
+export function subscribeToPatientUpdates(
+  handler: (payload: PatientRealtimePayload) => void
+): () => void {
+  const listenChannel = supabase.channel(CHANNEL_NAME, {
+    config: { broadcast: { self: true } },
+  });
 
-  const handler = (event: MessageEvent<PatientRealtimePayload>) => {
-    callback(event.data);
-  };
+  listenChannel.on(
+    "broadcast",
+    { event: "patient:update" },
+    (event: { payload: any }) => handler(event.payload as PatientRealtimePayload)
+  );
 
-  channel.addEventListener("message", handler);
+  listenChannel.subscribe();
 
   return () => {
-    channel.removeEventListener("message", handler);
-    channel.close();
+    supabase.removeChannel(listenChannel);
   };
 }

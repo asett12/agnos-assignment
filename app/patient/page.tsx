@@ -22,7 +22,16 @@ const initialForm: PatientFormData = {
 
 type Errors = Partial<Record<keyof PatientFormData, string>>;
 
+function generatePatientId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `patient-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export default function PatientPage() {
+  const [patientId] = useState<string>(() => generatePatientId());
+
   const [form, setForm] = useState<PatientFormData>(initialForm);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<PatientStatus>("idle");
@@ -63,22 +72,23 @@ export default function PatientPage() {
     if (status === "submitted") return;
 
     const timeout = setTimeout(() => {
-      if (
-        Object.values(form).some(
-          (value) => typeof value === "string" && value.trim() !== ""
-        )
-      ) {
+      const hasAnyValue = Object.values(form).some(
+        (value) => typeof value === "string" && value.trim() !== ""
+      );
+      if (hasAnyValue) {
+        const now = new Date().toISOString();
         setStatus("active");
         sendPatientUpdate({
+          patientId,
           data: form,
           status: "active",
-          lastUpdatedAt: new Date().toISOString(),
+          lastUpdatedAt: now,
         });
       }
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [form, status]);
+  }, [form, status, patientId]);
 
   const handleChange =
     (field: keyof PatientFormData) =>
@@ -102,6 +112,7 @@ export default function PatientPage() {
     setSubmittedAt(now);
 
     sendPatientUpdate({
+      patientId,
       data: form,
       status: "submitted",
       lastUpdatedAt: now,
@@ -115,6 +126,7 @@ export default function PatientPage() {
     setSubmittedAt(null);
 
     sendPatientUpdate({
+      patientId,
       data: initialForm,
       status: "idle",
       lastUpdatedAt: new Date().toISOString(),
