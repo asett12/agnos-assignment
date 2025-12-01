@@ -22,7 +22,6 @@ export default function StaffView() {
 
   useEffect(() => {
     const unsubscribe = subscribeToPatientUpdates((incoming) => {
-      console.log("Realtime payload:", incoming.patientId, incoming);
       setPatients((prev) => ({
         ...prev,
         [incoming.patientId]: incoming,
